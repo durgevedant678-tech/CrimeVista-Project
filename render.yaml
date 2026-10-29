@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: crimevista
+    runtime: python
+    plan: free
+    region: oregon
+    buildCommand: |
+      cd backend && python -m pip install -r requirements.txt && cd ../frontend && npm install && npm run build
+    startCommand: |
+      cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: API_ADMIN_TOKEN
+        sync: false
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: crimevista-db
+          property: connectionString
+      - key: FRONTEND_URL
+        value: https://<your-render-app>.onrender.com
+      - key: CORS_ORIGINS
+        value: https://<your-render-app>.onrender.com
+      - key: DATASET_PATH
+        value: /opt/render/project/src/backend/data/initial/nagpur_crime_data.csv
+    healthCheckPath: /api/health
+
+databases:
+  - name: crimevista-db
+    databaseName: crimevista
+    plan: free
